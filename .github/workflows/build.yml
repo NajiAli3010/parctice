@@ -31,7 +31,7 @@ jobs:
           sudo mv trivy /usr/local/bin/
 
       - name: Scan Container Image
-        run: trivy image ${{ secrets.DOCKERHUB_USERNAME }}/twit:latest\
+        run: trivy image ${{ secrets.DOCKERHUB_USERNAME }}/tasks:latest\
 
 
 
