@@ -23,6 +23,7 @@ jobs:
         run: vendor/bin/phpcs
         continue-on-error: true  # Continue even if linting fails
 
+
       # Container Security Scanning
       - name: Install Trivy
         run: |
