@@ -11,6 +11,7 @@ services:
             context: .
             dockerfile: Dockerfile
         container_name: tasks
+        image: naji1950/tasks:latest
         volumes:
             - .:/var/www/html
         depends_on:
@@ -46,7 +47,7 @@ services:
         image: prom/prometheus
         container_name: prometheus
         ports:
-            - "9090:9090"
+                - "9090:9090"
         volumes:
             - ./Monitor:/etc/Monitor
             - ./Monitor/scrape_config.yml:/etc/Monitor/scrape_config.yml
