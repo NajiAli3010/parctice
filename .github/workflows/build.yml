@@ -26,7 +26,7 @@ jobs:
           sudo mv trivy /usr/local/bin/
 
       - name: Scan Container Image
-        run: trivy image ${{ secrets.DOCKERHUB_USERNAME }}/tasks:latest\
+        run: trivy image ${{ secrets.DOCKERHUB_USERNAME }}/tasks-app:latest\
 
 
       # Sending success or failure notifications to Telegram

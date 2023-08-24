@@ -11,7 +11,7 @@ services:
             context: .
             dockerfile: Dockerfile
         container_name: tasks
-        image: naji1950/tasks:latest
+        image: naji1950/tasks-app:latest
         volumes:
             - .:/var/www/html
         depends_on:
