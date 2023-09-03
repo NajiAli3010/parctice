@@ -26,6 +26,228 @@ tasks от других пользователей. сначала ему нуж
 </details>
 
 
+<details>
+ <summary><h2>Github actions с уведомлениями telegram-бота </h2></summary>
+
+1. я создал .github/workflows/build.yml для actions
+2. 
+```bash
+   bash
+   name: CI/CD & telegram actions
+   on: [push]
+   jobs:
+
+build:
+name: Build Push Docker Image
+runs-on: ubuntu-latest
+steps:
+- uses: actions/checkout@master
+
+      # Container Security Scanning
+      - name: Install Trivy
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.21.0/trivy_0.21.0_Linux-64bit.tar.gz
+          tar zxvf trivy_0.21.0_Linux-64bit.tar.gz
+          sudo mv trivy /usr/local/bin/
+
+
+      - name: Build and Push Docker Image
+        run: |
+          docker-compose build
+          echo ${{ secrets.DOCKERHUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          docker-compose push
+        env:
+          DOCKER_BUILDKIT: 1
+
+
+      - name: Scan Container Image
+        run: trivy image ${{ secrets.DOCKERHUB_USERNAME }}/spa:latest\
+
+
+
+      # Sending success or failure notifications to Telegram
+      - name: Send Notification on Success
+        if: success()
+        uses: ./
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ✅ **CI/CD Completed Successfully!**
+            New push on branch: `${{ github.ref }}`
+            Commit Message: `${{ github.event.head_commit.message }}`
+
+      - name: Send Notification on Failure
+        if: failure()
+        uses: ./
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ❌ **CI/CD Failed!**
+            New push on branch: `${{ github.ref }}`
+            Commit Message: `${{ github.event.head_commit.message }}`name: tasks github actions & telegram notifications
+on: [push]
+jobs:
+
+  build:
+    name: Build Push Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+
+      - name: Build and Push Docker Image
+        run: |
+          docker-compose build
+          echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          docker-compose push
+        env:
+          DOCKER_BUILDKIT: 1
+
+
+
+      # Container Security Scanning
+      - name: Install Trivy
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.21.0/trivy_0.21.0_Linux-64bit.tar.gz
+          tar zxvf trivy_0.21.0_Linux-64bit.tar.gz
+          sudo mv trivy /usr/local/bin/
+
+      - name: Scan Container Image
+        run: trivy image ${{ secrets.DOCKERHUB_USERNAME }}/tasks-app:latest\
+
+
+      # Sending success or failure notifications to Telegram
+      - name: Send Notification on Success
+        if: success()
+        uses: ./
+        with:
+          to: ${{ secrets.BOT_CHAT_ID }}
+          token: ${{ secrets.BOT_TOKEN }}
+          message: |
+            ✅ CI/CD Completed Successfully!
+            New push on branch: ${{ github.ref }}
+            Commit Message: ${{ github.event.head_commit.message }}
+
+      - name: Send Notification on Failure
+        if: failure()
+        uses: ./
+        with:
+          to: ${{ secrets.BOT_CHAT_ID }}
+          token: ${{ secrets.BOT_TOKEN }}
+          message: |
+            ❌ CI/CD Failed!
+            New push on branch: ${{ github.ref }}
+            Commit Message: ${{ github.event.head_commit.message }}
+
+
+```
+## Workflow Overview
+
+Рабочий процесс запускается автоматически всякий раз,
+когда в репозитории обнаруживается новое push-событие.
+Он состоит из следующих основных компонентов:
+
+### Job: Build Push Docker Image
+
+Это задание управляет всем процессом CI/CD
+и состоит из нескольких ключевых этапов:
+
+1. Code Checkout: Извлекается код репозитория, гарантирующий, что для последующих действий используется последняя версия.
+
+2. Trivy Installation: Trivy, Trivy, надежный сканер уязвимостей для образов контейнеров, установлен в среде выполнения рабочего процесса.
+
+3. Docker Image Build and Push: Образ Docker создается и впоследствии отправляется с помощью Docker Compose. Этот процесс включает в себя использование учетных данных Docker Hub, надежно хранящихся в виде секретов GitHub.
+
+4. Image Vulnerability Scanning: Созданный образ Docker подвергается сканированию на уязвимости с помощью Trivy. Этот шаг помогает обеспечить сохранность изображения.
+
+5. Notification on Success: Если процесс создания и отправки образа Docker завершается успешно, уведомление об успешном завершении отправляется на указанный канал Telegram. Уведомление содержит подробную информацию об успешном завершении CI/CD, новом push-событии и связанном с ним сообщении о фиксации.
+
+6. Notification on Failure: В случае сбоя во время сборки образа Docker или push-процесса уведомление о сбое отправляется на тот же Telegram-канал. Уведомление сообщает о статусе сбоя процесса CI/CD вместе с соответствующей информацией о новом push-событии и соответствующем сообщении о фиксации.
+
+## Как это работает
+
+1. Всякий раз, когда в репозитории происходит новое push-событие, автоматически запускается рабочий процесс GitHub Actions.
+
+2. Задание рабочего процесса координирует задачи создания, отправки и сканирования изображений Docker с помощью Docker Compose и Trivy.
+
+3. В зависимости от результатов процесса CI/CD на указанный Telegram-канал отправляется соответствующее уведомление (об успехе или неудаче).
+
+Внедрив этот рабочий процесс, я могу оптимизировать свой конвейер CI / CD,
+повысить безопасность образа Docker за счет тщательного сканирования уязвимостей и
+быть в курсе хода моих развертываний с помощью уведомлений Telegram.
+
+
+2. я создал Dockerfile для github actions
+
+
+
+
+
+```bash
+FROM appleboy/drone-telegram:1.3.9-linux-amd64
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+WORKDIR /github/workspace
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+```
+
+Этот Dockerfile разработан для использования в GitHub Actions и выполняет следующие действия:
+
+1. Основной образ: appleboy/drone-telegram:1.3.9-linux-amd64.
+2. Копирование файлов: Копирует содержимое каталога /var/www/html из образа php_stage в каталог /var/www/html внутри текущего образа.
+3. Копирование `entrypoint.sh`: Перемещает файл entrypoint.sh в корневой каталог образа.
+4. Назначение прав: Устанавливает исполняемые права на файл entrypoint.sh.
+5. Рабочая директория: Устанавливает рабочую директорию как /github/workspace.
+6. Точка входа: Задает точку входа для образа как /entrypoint.sh.
+
+В результате данный Dockerfile настраивает образ для использования в GitHub Actions, осуществляя копирование файлов, настройку прав и определение точки входа для выполнения скрипта entrypoint.sh.
+
+
+
+3. я создал entrypoint.sh file
+
+```bash
+#!/bin/sh
+set -eu
+
+export GITHUB="true"
+
+[ -n "$*" ] && export TELEGRAM_MESSAGE="$*"
+
+/bin/drone-telegram
+
+```
+
+Этот скрипт используется как точка входа в Docker-контейнере и предназначен для выполнения определенных действий:
+
+1. Установка переменных окружения: Устанавливает переменную окружения GITHUB в значение true, указывая на выполнение в контексте GitHub.
+
+2. Условное задание сообщения для Telegram: Если переданы аргументы командной строки, то значение переданных аргументов устанавливается в переменную окружения TELEGRAM_MESSAGE.
+
+3. Запуск `/bin/drone-telegram`: Запускает исполняемый файл /bin/drone-telegram, выполняя последующие действия.
+
+В итоге этот скрипт настраивает окружение, обрабатывает сообщение для Telegram (если указано), и запускает действия с использованием /bin/drone-telegram.
+
+![Prometheus](public/Imgs/img9.jpg)
+![Prometheus](public/Imgs/img1.jpg)
+![Prometheus](public/Imgs/img2.jpg)
+![Prometheus](public/Imgs/img3.jpg)
+![Prometheus](public/Imgs/img4.jpg)
+![Prometheus](public/Imgs/img6.jpg)
+![Prometheus](public/Imgs/img7.jpg)
+![Prometheus](public/Imgs/img8.jpg)
+![Prometheus](public/Imgs/img5.jpg)
+
+
+</details>
+
+
 
 ![Login Page](public/Imgs/tasks1.jpg)
 
