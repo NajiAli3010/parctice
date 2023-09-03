@@ -18,6 +18,7 @@ jobs:
           DOCKER_BUILDKIT: 1
 
 
+
       # Container Security Scanning
       - name: Install Trivy
         run: |
