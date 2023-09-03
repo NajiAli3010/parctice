@@ -182,15 +182,15 @@ export GITHUB="true"
 
 В итоге этот скрипт настраивает окружение, обрабатывает сообщение для Telegram (если указано), и запускает действия с использованием /bin/drone-telegram.
 
-![Prometheus](public/Imgs/img9.jpg)
-![Prometheus](public/Imgs/img1.jpg)
-![Prometheus](public/Imgs/img2.jpg)
-![Prometheus](public/Imgs/img3.jpg)
-![Prometheus](public/Imgs/img4.jpg)
-![Prometheus](public/Imgs/img6.jpg)
-![Prometheus](public/Imgs/img7.jpg)
-![Prometheus](public/Imgs/img8.jpg)
-![Prometheus](public/Imgs/img5.jpg)
+![Prometheus](public/Imgs/img9.png)
+![Prometheus](public/Imgs/img1.png)
+![Prometheus](public/Imgs/img2.png)
+![Prometheus](public/Imgs/img3.png)
+![Prometheus](public/Imgs/img4.png)
+![Prometheus](public/Imgs/img6.png)
+![Prometheus](public/Imgs/img7.png)
+![Prometheus](public/Imgs/img8.png)
+![Prometheus](public/Imgs/img5.png)
 
 
 </details>
